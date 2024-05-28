@@ -1,0 +1,253 @@
+<!doctype html>
+<html>
+  <head>
+    <title>
+      What I learned from reading the GraphQL Spec - by Thomas Heyenbrock
+    </title>
+  </head>
+  <body style="max-width: 80ch">
+    <nav>
+      <a href="/">Home</a>
+      <span>&middot;</span>
+      <a href="/blog">Blog</a>
+      <span>&middot;</span>
+      <a href="/talks">Talks</a>
+      <span>&middot;</span>
+      <a href="https://github.com/thomasheyenbrock">GitHub</a>
+      <span>&middot;</span>
+      <a href="https://www.linkedin.com/in/thomas-heyenbrock/"> LinkedIn </a>
+      <span>&middot;</span>
+      <a href="https://x.com/heyenbrock">X</a>
+    </nav>
+
+    <aside
+      style="
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+        border-left-width: 2px;
+        border-left-style: solid;
+        padding-left: 8px;
+      "
+    >
+      This blog post has also been published on the
+      <a href="https://stellate.co/blog/what-i-learned-from-the-gql-spec">
+        Stellate blog</a
+      >, where I was employed at the time of publication.
+    </aside>
+
+    <p>Published on <time datetime="2022-01-04">January 4, 2022</time></p>
+
+    <h1>What I learned from reading the GraphQL Spec</h1>
+    <p>
+      How did you learn GraphQL? I did it by hands-on building stuff with it,
+      with a lot of help from online tutorials, search engines, and time.
+    </p>
+    <p>
+      If you started your journey with GraphQL by reading the
+      <a href="http://spec.graphql.org/">full specification</a>, then kudos! In
+      my case, it took several years of working with GraphQL - from
+      side-projects to production APIs - and a quiet week of vacation until I
+      had the muse to take a look into that long document.
+    </p>
+    <p>
+      Turns out that this spec is very well written! There aren't many
+      prerequisites to get started and most sections are accompanied by
+      descriptive examples. In fact, after smashing through the whole document
+      in two days, I walked away with a deeper understanding of GraphQL, and I
+      even learned some new tips for a language I've been using for years.
+    </p>
+
+    <h2>Block Strings</h2>
+    <p>
+      Being able to document your API inline with your schema definition is an
+      awesome feature of GraphQL. Fun fact: It doesn't actually show up in the
+      <a href="https://graphql.org/learn/">"Introduction to GraphQL"</a>
+      section, so here's a quick refresher:
+    </p>
+    <figure>
+      <pre>
+type User {
+  """
+  You can document here what this field contains
+  """
+  name: String
+}</pre
+      >
+    </figure>
+    <p>
+      Initially it seemed to me that the triple quotes are a special syntax, but
+      it's actually just regular string tokens. GraphQL defines both "block
+      strings" (the ones with triple quotes) and regular "strings", but they are
+      both parsed as the same token. You might have known that (I felt quite
+      stupid after reading that), but did you know:
+    </p>
+    <blockquote>
+      The GraphQL spec states that the value of a block string has to be trimmed
+      and dedented when parsing the document.
+    </blockquote>
+    <p>
+      That means even though the block string in the example above contains two
+      newlines and a tab, the resulting value will simply be
+      <code>You can document here what this field contains</code>. That's pretty
+      neat, and it comes in very handy when passing multi-line strings as
+      arguments.
+    </p>
+
+    <h2>Descriptions</h2>
+    <p>Since we're talking about descriptions, did you know that:</p>
+    <blockquote>
+      GraphQL allows and endorses using Markdown in descriptions.
+    </blockquote>
+    <p>
+      That means you're not limited to plain text when it comes to documenting
+      your schema. You can include links to other resources, show code snippets
+      with syntax highlighting, or even embedd images and videos! Both
+      <a href="https://github.com/graphql/graphiql">GraphiQL</a>
+      and
+      <a href="https://github.com/graphql/graphql-playground">
+        GraphQL Playground
+      </a>
+      parse descriptions as Markdown and include the resulting HTML in the docs
+      tab.
+    </p>
+
+    <h2>Coercion</h2>
+    <p>
+      The spec talks a lot about how a GraphQL server should coerce values to a
+      certain type. (Searching for <code>coerc</code> yields 148 results in the
+      latest release!) There are two kinds of coercion that the spec defines for
+      all kinds of types and built-in scalar types:
+    </p>
+    <ul>
+      <li>
+        "Result coercion": How to coerce values returned by a resolver to the
+        type given by the schema.
+      </li>
+      <li>
+        "Input coercion": How to coerce a value passed as argument or variable
+        to the type given in the schema or operation.
+      </li>
+    </ul>
+    <p>
+      The spec goes the most into detail about the latter one, and there's one
+      thing that I never would have guessed is valid GraphQL:
+    </p>
+    <blockquote>
+      When passing a singular non-null type as input to an argument that expects
+      a list type, the result of GraphQL input coercion is a list of length one
+      where the single item is the passed value.
+    </blockquote>
+    <p>That's a mouthful, so let's do a concrete example using this schema:</p>
+    <figure>
+      <pre>
+type Query {
+  """
+  Calculates the sum of all passed summands. Examples:
+  - Querying `sum(summands: [])` returns `0`
+  - Querying `sum(summands: [1])` returns `1`
+  - Querying `sum(summands: [1, 2, 3])` returns `6`
+  """
+  sum(summands: [Int!]!): Int!
+}</pre
+      >
+    </figure>
+    <p>Given that, all following queries will return the same result:</p>
+    <figure>
+      <pre>
+query PassAList {
+  sum(summands: [1])
+}
+
+# Passing a single value works just as fine
+query PassASingleValue {
+  sum(summands: 1)
+}
+
+# It even works when passing it as variable,
+# i.e. when sending the following query with
+# `{ variables: { summands: 1 } }`
+query PassAVariable($summands: [Int!]!) {
+  sum(summands: $summands)
+}</pre
+      >
+    </figure>
+
+    <h2>Execution</h2>
+    <p>
+      When handling a GraphQL request, this is the phase where the server will
+      actually go through all the selection sets and calls your resolvers. After
+      writing GraphQL servers in Node.js for some time, the function signature
+      for a resolver has probably been permanently imprinted in your memory.
+    </p>
+    <figure>
+      <pre>
+function myResolver(root, arguments, context, info) {  // Do stuff...}</pre
+      >
+    </figure>
+    <p>
+      After reading the spec section about execution, I came to a realization:
+    </p>
+    <blockquote>
+      Neither the <code>context</code> nor the <code>info</code> objects are
+      mentioned anywhere in the spec.
+    </blockquote>
+    <p>
+      This is probably the least practical thing I learned, but it was
+      interesting to see that the spec intentionally leaves out such
+      "implementation details". You could start implementing your own GraphQL
+      server with a different abstraction for sharing objects between resolvers,
+      and it would still align perfectly with the spec.
+    </p>
+
+    <h2>Serialization</h2>
+    <p>
+      The GraphQL spec also shortly talks about how the execution result should
+      be serialized. Fact is:
+    </p>
+    <blockquote>
+      GraphQL does not require a specific serialization format.
+    </blockquote>
+    <p>
+      The most common format is JSON, but it's actually not optimally suited for
+      GraphQL. Objects in JSON are unordered, but selection sets in GraphQL are
+      ordered. If a serialization format supports ordered maps, the order of
+      items should mirror the order of fields in the selection set.
+    </p>
+    <p>JSON gets its own subsection, where the spec at least asks for this:</p>
+    <blockquote>
+      JSON (or other textual serialization formats) should preserve the order of
+      requested fields textually.
+    </blockquote>
+    <p>
+      That means that given the query <code>{ name, email }</code>, the JSON
+      response should be
+      <code>{"name":"Thomas","email":"thomas@graphcdn.io"}</code>, but not
+      <code>{"email":"thomas@graphcdn.io","name":"Thomas"}</code>.
+    </p>
+
+    <h2>GraphQL over HTTP</h2>
+    <p>
+      After I finished reading the spec, the last thing I noticed is that it
+      does talk about the most common use-case of GraphQL:
+    </p>
+    <blockquote>GraphQL is not limited to serving an API over HTTP.</blockquote>
+    <p>
+      This leaves the door open to use GraphQL as interface language for
+      completely different kinds of systems. It also means that there are no
+      hard requirements yet on how GraphQL APIs should serve content over HTTP
+      (just think of status codes). There is however active development on
+      writing out a
+      <a href="https://github.com/graphql/graphql-over-http">separate spec</a>
+      on this!
+    </p>
+
+    <h2>Now go read it!</h2>
+    <p>
+      If you learned a thing or two by reading this post I highly recommend
+      reading through the spec for yourself! Even if you already knew all of
+      this, it's worth checking in on the spec once in a while. The latest draft
+      is developed very actively, and just back in October there even was a new
+      official release. I promise it's gonna be worth it!
+    </p>
+  </body>
+</html>

