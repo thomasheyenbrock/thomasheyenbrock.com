@@ -1,0 +1,26 @@
+:root {
+  font-size: 1.125em;
+}
+body {
+  line-height: 1.5;
+}
+aside,
+figcaption {
+  border-left-width: 2px;
+  border-left-style: solid;
+  padding-left: 8px;
+}
+aside {
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+}
+code,
+pre {
+  font-size: 0.88em;
+  background-color: #eee;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+pre {
+  white-space: break-spaces;
+}
