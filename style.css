@@ -1,8 +1,11 @@
 :root {
+  font-family: system-ui;
   font-size: 1.125em;
 }
 body {
   line-height: 1.5;
+  margin: 32px 64px;
+  max-width: 65ch;
 }
 aside,
 figcaption {
