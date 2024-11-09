@@ -4,8 +4,13 @@
 }
 body {
   line-height: 1.5;
-  margin: 32px 64px;
+  margin: 16px 32px;
   max-width: 65ch;
+}
+@media (min-width: 768px) {
+  body {
+    margin: 32px 64px;
+  }
 }
 aside,
 figcaption {
