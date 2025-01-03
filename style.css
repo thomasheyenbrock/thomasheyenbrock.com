@@ -32,3 +32,6 @@ pre {
 pre {
   white-space: break-spaces;
 }
+footer{
+  border-top: 1px solid black;
+}
