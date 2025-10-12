@@ -1,0 +1,304 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>The Ultimate GraphQL Demo API - by Thomas Heyenbrock</title>
+    <meta name="author" content="Thomas Heyenbrock" />
+    <meta
+      name="description"
+      content="There are many Demo APIs for GraphQL, but they are all shallow. I built one that has it all and let's you explore all of GraphQL's amazing features."
+    />
+
+    <meta
+      property="og:title"
+      content="The Ultimate GraphQL Demo API"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://thomasheyenbrock.com/blog/graphql-demo-api"
+    />
+    <meta
+      property="og:image"
+      content="https://thomasheyenbrock.com/blog/graphql-demo-api/og.jpg"
+    />
+
+    <link href="/style.css" rel="stylesheet" />
+    <script
+      defer
+      data-domain="thomasheyenbrock.com"
+      data-api="/plsblapi/"
+      src="/plsbl.js"
+    ></script>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a>
+      <span>&middot;</span>
+      <a href="/blog/">Blog</a>
+      <span>&middot;</span>
+      <a href="/talks/">Talks</a>
+      <span>&middot;</span>
+      <a href="https://github.com/thomasheyenbrock">GitHub</a>
+      <span>&middot;</span>
+      <a href="https://www.linkedin.com/in/thomas-heyenbrock/"> LinkedIn </a>
+      <span>&middot;</span>
+      <a href="https://x.com/heyenbrock">X</a>
+    </nav>
+
+    <p>Published on <time datetime="2024-06-07">June 7, 2024</time></p>
+
+    <h1>The Ultimate GraphQL Demo API</h1>
+    <p>
+      I have spent a lot of time in my career working on GraphQL tooling. I
+      built the
+      <a href="/blog/graphiql-v2/">second major version of GraphiQL</a>, and at
+      <a href="https://stellate.co">Stellate</a> I have been involved with
+      GraphQL caching for over two years.
+    </p>
+    <p>
+      I found myself coming back to implementing simple GraphQL APIs with very
+      specific features to aid in development and testing. And while it became
+      relatively easy for me to do so, it might not be as easy for others.
+    </p>
+
+    <h2>The Status Quo</h2>
+    <p>
+      I started looking at existing open GraphQL APIs that are commonly used for
+      testing and showcasing the capabilities of GraphQL. And there do exist a
+      bunch:
+    </p>
+    <ul>
+      <li>
+        <a href="https://graphql.org/swapi-graphql">SWAPI (Star Wars API)</a>
+      </li>
+      <li>
+        <a href="https://countries.trevorblades.com/">Countries API</a>
+      </li>
+      <li>
+        <a href="https://rickandmortyapi.com/graphql">Rick and Morty API</a>
+      </li>
+    </ul>
+    <p>
+      All of the above succeed in showing how to query data using GraphQL. But
+      that is not all that GraphQL can do. Concretely, these APIs fall short on:
+    </p>
+    <ul>
+      <li>Support for sending mutations or subscriptions.</li>
+      <li>Having Interface Types or Union Types as part of their schema.</li>
+      <li>
+        Implementing common patterns in GraphQL schema design (global
+        identifiers, connections, error unions, etc.)
+      </li>
+      <li>Examples for authorization</li>
+      <li>Security filters (depth limits, token limits, alias limits, etc.)</li>
+      <li>
+        Support for work-in-progress GraphQL features that are not yet part of
+        the official specification (<code>@defer</code>, <code>@stream</code>,
+        <code>@oneOf</code>, etc.)
+      </li>
+    </ul>
+    <p>
+      For each of the above, I have created a dedicated GraphQL API in the past.
+      And I don't want to repeat doing it over and over.
+    </p>
+    <p>So I created one to rule them all.</p>
+
+    <h2>Graph of Thrones API</h2>
+    <p>
+      I picked the popular
+      <a href="https://www.hbo.com/game-of-thrones">
+        Game of Thrones TV series</a
+      >
+      as my genre of choice. Mainly because I liked the series, but also because
+      there's lots of content to build an extensive API around.
+    </p>
+    <p>Let's look at what this API can do.</p>
+
+    <h3>All kinds of schema types</h3>
+    <p>
+      While many GraphQL Demo APIs limit their schema to using Object Types, the
+      schema of the Graph of Thrones API contains all kinds of types, in
+      particular Interface Types, Union Types, Input Types, Enum Types, and even
+      custom Scalar Types.
+    </p>
+    <p>
+      There exist many different locations in the Game of Thrones Universe, and
+      locations can be of different kinds: Settlements, Regions, Continents, and
+      many more. This is a perfect use-case for an interface type
+      <code>Location</code>. The following video shows an example query that
+      makes use of this interface type:
+    </p>
+    <video controls style="width: 100%">
+      <source src="interfaces.mp4" />
+      Download the
+      <a href="interfaces.mp4">video showing the usage of Interface Types</a>.
+    </video>
+    <p>
+      Union Types are also part of the schema. One example is to display
+      structured information about all the different ways that character die in
+      the series. The following video gives an example:
+    </p>
+    <video controls style="width: 100%">
+      <source src="unions.mp4" />
+      Download the
+      <a href="unions.mp4">video showing the usage of Union Types</a>.
+    </video>
+
+    <h3>Mutations and Subscription</h3>
+    <p>
+      While queries are the most-used operation type in GraphQL, mutations and
+      subscriptions are an essential part of the specification as well.
+    </p>
+    <p>
+      However, they are not as trivial to implement as queries. A mutation
+      implies that the server is stateful or there is some sort of storage that
+      persists changes to data. Subscriptions are even more complex because they
+      need additional functionality to stream back incremental payloads to the
+      client.
+    </p>
+    <p>
+      The Graph of Thrones API supports all root operation types. You can rate
+      episodes with a mutation, and subscribe to incoming ratings via a
+      subscription, as shown by the following video:
+    </p>
+    <video controls style="width: 100%">
+      <source src="subscriptions.mp4" />
+      Download the
+      <a href="subscriptions.mp4"
+        >video showing the usage of mutations and subscriptions</a
+      >.
+    </video>
+
+    <h3>Common schema design patterns</h3>
+    <p>
+      Over the years, a lot of patterns emerged for how to design scalable
+      GraphQL schemas. The Graph of Thrones API supports most of them.
+    </p>
+
+    <h4>Global Identifiers</h4>
+    <p>
+      This pattern was made popular by <a href="https://relay.dev/">Relay</a>.
+      It requires all entities to have a unique <code>id</code> field by
+      implementing a <code>Node</code> interface. This allows fetching
+      individual entities by those identifiers through the <code>node</code> and
+      <code>nodes</code> query root fields.
+    </p>
+    <video controls style="width: 100%">
+      <source src="global-identifiers.mp4" />
+      Download the
+      <a href="global-identifiers.mp4"
+        >video showing the usage of global identifiers</a
+      >.
+    </video>
+
+    <h4>Connection Fields</h4>
+    <p>
+      Another popular pattern that emerged through Relay was using so-called
+      connection fields. They are an advanced way of dealing with long lists
+      that allows the client to efficiently paginate the list, meaning only
+      fetching subsets of the complete list.
+    </p>
+    <video controls style="width: 100%">
+      <source src="connection-fields.mp4" />
+      Download the
+      <a href="connection-fields.mp4"
+        >video showing the usage of connection fields</a
+      >.
+    </video>
+
+    <h4>Error Unions</h4>
+    <p>
+      Error handling is a contested topic in GraphQL. A popular pattern that
+      emerged was to encode error information inside the schema using Union
+      Types. The GraphQL of Thrones API applies this patterns to its mutations.
+    </p>
+    <video controls style="width: 100%">
+      <source src="error-unions.mp4" />
+      Download the
+      <a href="error-unions.mp4">video showing the usage of error unions</a>.
+    </video>
+
+    <h3>Upcoming GraphQL Features</h3>
+    <p>
+      There are some exciting proposals to extend the GraphQL specification with
+      new functionality. Some of those proposals are already being used in
+      production today, so the Graph of Thrones API makes sure to implement
+      them.
+    </p>
+
+    <h4>Incremental Delivery</h4>
+    <p>
+      While subscriptions are already part of the GraphQL specification,
+      incremental delivery is also coming to queries and mutations with the new
+      <code>@defer</code> and <code>@stream</code> directives.
+    </p>
+    <p>
+      The <code>@defer</code> directive allows you to mark a fragment to be
+      delivered incrementally, meaning it will be sent only after all the
+      non-deferred fields have been resolved.
+    </p>
+    <p>
+      The <code>@stream</code> directive allows you to mark fields that return a
+      list so that individual list items will be sent by the server whenever
+      they are resolved, without having to wait for the complete list.
+    </p>
+    <video controls style="width: 100%">
+      <source src="defer-stream.mp4" />
+      Download the
+      <a href="defer-stream.mp4"
+        >video showing the usage of <code>@defer</code> and
+        <code>@stream</code> directives</a
+      >.
+    </video>
+
+    <h4><code>@oneOf</code> Input Directive</h4>
+    <p>
+      When using multiple arguments for a single field, you sometimes want to
+      enforce that these arguments are set mutually exclusive. In other words,
+      you want to prevent two non-compattible arguments from being sent at the
+      same time. This is exactly what the proposal for a
+      <code>@oneOf</code> schema directive solved.
+    </p>
+    <p>
+      The Graph of Thrones API implements this directive for Input Types that
+      are used to fetch individual entities using different unique properties.
+    </p>
+    <video controls style="width: 100%">
+      <source src="one-of.mp4" />
+      Download the
+      <a href="one-of.mp4"
+        >video showing the effect of the <code>@oneOf</code> directive on an
+        Input Type</a
+      >.
+    </video>
+
+    <footer>
+      <p>
+        <a
+          href="https://www.linkedin.com/sharing/share-offsite/?text=The%20Ultimate%20GraphQL%20Demo%20API%0A%0Ahttps%3A%2F%2Fthomasheyenbrock.com%2Fblog%2Fgraphql-demo-api%2F"
+        >
+          Share on LinkedIn
+        </a>
+      </p>
+
+      <p>
+        <a
+          href="https://x.com/intent/post?text=The%20Ultimate%20GraphQL%20Demo%20API%0A%0Ahttps%3A%2F%2Fthomasheyenbrock.com%2Fblog%2Fgraphql-demo-api%2F"
+        >
+          Share on X
+        </a>
+      </p>
+
+      <p>
+        <a
+          href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fthomasheyenbrock.com%2Fblog%2Fgraphql-demo-api%2F&t=The%20Ultimate%20GraphQL%20Demo%20API"
+        >
+          Share on HackerNews
+        </a>
+      </p>
+    </footer>
+  </body>
+</html>
