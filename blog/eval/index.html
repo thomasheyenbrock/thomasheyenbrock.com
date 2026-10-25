@@ -11,7 +11,10 @@
       content="A deep dive into code execution in JavaScript, how it can be exploited and how hard you can try to prevent it."
     />
 
-    <meta property="og:title" content="(Un)safe code evaluation in JavaScript" />
+    <meta
+      property="og:title"
+      content="(Un)safe code evaluation in JavaScript"
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://thomasheyenbrock.com/blog/eval/" />
     <meta
@@ -20,12 +23,6 @@
     />
 
     <link href="/style.css" rel="stylesheet" />
-    <script
-      defer
-      data-domain="thomasheyenbrock.com"
-      data-api="/plsblapi/"
-      src="/plsbl.js"
-    ></script>
   </head>
   <body>
     <nav>
@@ -109,8 +106,7 @@ if (/\(|\)/.test(code)) {
   throw new Error("Invalid code!");
 }
 
-eval(code);</pre
-        >
+eval(code);</pre>
       </figure>
       <p>
         This works for the given code. But we can easily bypass this by using
@@ -128,8 +124,7 @@ if (/\(|\)/.test(code)) {
   throw new Error("Invalid code!");
 }
 
-eval(code);</pre
-        >
+eval(code);</pre>
       </figure>
       <p>No more brackets, function execution none the less. 😕</p>
       <p>
@@ -144,8 +139,7 @@ if (/kill/.test(code)) {
   throw new Error("Invalid code!");
 }
 
-eval(code);</pre
-        >
+eval(code);</pre>
       </figure>
       <p>
         Now we will be safe, right? Not exactly. It turns out that there are
@@ -171,8 +165,7 @@ if (/\(|\)/.test(code)) {
   throw new Error("Invalid code!");
 }
 
-eval(code);</pre
-        >
+eval(code);</pre>
       </figure>
       <p>Again, security check bypassed! 😕 😢</p>
       <p>
@@ -192,8 +185,7 @@ const code = "process.kill(0);";
 (() => {
   const process = {};
   eval(code);
-})()</pre
-        >
+})()</pre>
       </figure>
       <p>
         If we run this code we will get an error, stating that
@@ -234,8 +226,7 @@ const code = "Function('process.exit(0)')()";
 (() => {
   const process = {};
   eval(code);
-})()</pre
-        >
+})()</pre>
       </figure>
       <p>We also cracked this one! 😕 😢 😰</p>
       <p>
@@ -250,8 +241,7 @@ const code = "Function('process.exit(0)')()";
   const Function = {};
   const process = {};
   eval(code);
-})()</pre
-        >
+})()</pre>
       </figure>
       <p>
         Yes, it prevents this exact code from executing. But like it was the
@@ -269,8 +259,7 @@ String.constructor === Function;
 (0).constructor.constructor === Function;
 true.constructor.constructor === Function;
 [].constructor.constructor === Function;
-process.constructor.constructor === Function;</pre
-        >
+process.constructor.constructor === Function;</pre>
       </figure>
       <p>
         We can just choose one of those and we will make our exploit work again:
@@ -283,8 +272,7 @@ const code = "[].constructor.constructor('process.exit(0)')()";
   const Function = {};
   const process = {};
   eval(code);
-})()</pre
-        >
+})()</pre>
       </figure>
       <p>Secure code evaluation no more... 😕 😢 😰 😭</p>
     </section>

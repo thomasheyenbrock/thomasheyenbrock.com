@@ -1,13 +1,3 @@
 {
-  "rewrites": [
-    {
-      "source": "/plsbl.js",
-      "destination": "https://plausible.io/js/script.js"
-    },
-    {
-      "source": "/plsblapi/",
-      "destination": "https://plausible.io/api/event"
-    }
-  ],
   "trailingSlash": true
 }

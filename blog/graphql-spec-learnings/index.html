@@ -13,7 +13,10 @@
       content="The specification is actually a very nice read, and if you do so you might find some unexpected things. I'm gonna tell you the ones that stood out to me."
     />
 
-    <meta property="og:title" content="What I learned from reading the GraphQL Spec" />
+    <meta
+      property="og:title"
+      content="What I learned from reading the GraphQL Spec"
+    />
     <meta property="og:type" content="website" />
     <meta
       property="og:url"
@@ -25,12 +28,6 @@
     />
 
     <link href="/style.css" rel="stylesheet" />
-    <script
-      defer
-      data-domain="thomasheyenbrock.com"
-      data-api="/plsblapi/"
-      src="/plsbl.js"
-    ></script>
   </head>
   <body>
     <nav>
@@ -90,8 +87,7 @@ type User {
   You can document here what this field contains
   """
   name: String
-}</pre
-      >
+}</pre>
     </figure>
     <p>
       Initially it seemed to me that the triple quotes are a special syntax, but
@@ -167,8 +163,7 @@ type Query {
   - Querying `sum(summands: [1, 2, 3])` returns `6`
   """
   sum(summands: [Int!]!): Int!
-}</pre
-      >
+}</pre>
     </figure>
     <p>Given that, all following queries will return the same result:</p>
     <figure>
@@ -187,8 +182,7 @@ query PassASingleValue {
 # `{ variables: { summands: 1 } }`
 query PassAVariable($summands: [Int!]!) {
   sum(summands: $summands)
-}</pre
-      >
+}</pre>
     </figure>
 
     <h2>Execution</h2>
@@ -200,8 +194,7 @@ query PassAVariable($summands: [Int!]!) {
     </p>
     <figure>
       <pre>
-function myResolver(root, arguments, context, info) {  // Do stuff...}</pre
-      >
+function myResolver(root, arguments, context, info) {  // Do stuff...}</pre>
     </figure>
     <p>
       After reading the spec section about execution, I came to a realization:
