@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>Stop reading the code - by Thomas Heyenbrock</title>
+    <meta name="author" content="Thomas Heyenbrock" />
+    <meta
+      name="description"
+      content="We already stopped writing code, it's time we get ready to stop reading it."
+    />
+
+    <meta property="og:title" content="Stop reading the code" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://thomasheyenbrock.com/blog/stop-reading-the-code"
+    />
+    <meta
+      property="og:image"
+      content="https://thomasheyenbrock.com/blog/stop-reading-the-code/og.jpg"
+    />
+
+    <link href="/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a>
+      <span>&middot;</span>
+      <a href="/blog/">Blog</a>
+      <span>&middot;</span>
+      <a href="/talks/">Talks</a>
+      <span>&middot;</span>
+      <a href="https://github.com/thomasheyenbrock">GitHub</a>
+      <span>&middot;</span>
+      <a href="https://www.linkedin.com/in/thomas-heyenbrock/"> LinkedIn </a>
+      <span>&middot;</span>
+      <a href="https://x.com/heyenbrock">X</a>
+    </nav>
+
+    <p>Published on <time datetime="2026-11-24">Nov 24, 2026</time></p>
+
+    <h1>Stop reading the code</h1>
+
+    <p>As a software engineer, do you still write code?</p>
+
+    <p>
+      I don't. LLMs have become insanely good at this. Quite naturally, I
+      started spending most of my time <i>reading</i> all the code my agents
+      wrote instead. And there are no signs of this trend slowing down.
+    </p>
+
+    <p>
+      Now there is a new bottleneck ahead: The amount of code my agents write is
+      so large that I can no longer read all of it. Let alone the code my
+      colleagues write and submit for code review.
+    </p>
+
+    <p>
+      So let's take a step back: <i>Why</i> are we reading and reviewing code in
+      the first place?
+    </p>
+
+    <p>I looked at code as a proxy for answering two questions:</p>
+
+    <ol>
+      <li>Does the software work?</li>
+      <li>Does the software scale?</li>
+    </ol>
+
+    <p>
+      Notice that I'm not using the word "code" here. In fact, I am realizing
+      now:
+      <b>It never was about the code, it always was about outcomes!</b> LLMs
+      took over writing the code, and that is empowering software engineers to
+      truly take ownership over what's actually in the job's name: The software.
+    </p>
+
+    <p>
+      This implies that the way we review our work needs to fundamentally change
+      as well. The two questions stay the same, but instead of evaluating the
+      implementation we need to start evaluating the outcomes.
+    </p>
+
+    <h2>Does the software work?</h2>
+
+    <p>
+      Software that "works" needs to tick a lot of boxes: Correctness,
+      reliability, performance, security, integrity, compliance, privacy, and
+      many more.
+    </p>
+
+    <p>
+      In the past, I relied heavily on testing for many of these. Now, the
+      problem is that many of these tests are written in code. This means we're
+      running into the same problems as with the code we're trying to test: Who
+      should read and review all those tests?
+    </p>
+
+    <p>
+      There are methods of testing that don't use code: In QA-testing, the
+      tester works off of a specification that describes how the software is
+      intended to work from the user's perspective. On top, they also explore
+      potential edge cases and evaluate how the software behaves outside of the
+      strictly specified use cases.
+    </p>
+
+    <p>
+      Historically, QA testers have been humans because the testing process is
+      non-deterministic. But now we have LLMs, also non-deterministic by nature!
+    </p>
+
+    <p>
+      I think it's very feasible today to give a spec to an agent and have it
+      check the software accordingly. The hardest part is to wrap that agent
+      with the right harness and give it the right tools. I think the even
+      harder problem will be to run this at scale, the same way we can run unit
+      tests in CI fast and cheap today.
+    </p>
+
+    <h2>Does the software scale?</h2>
+
+    <p>
+      While the first question focuses on the immediate impact a change has on
+      the software, this one is about the long-term effects of the change and
+      addressing the fact that many humans or agents collaborate on evolving and
+      maintaining it.
+    </p>
+
+    <p>
+      There are many more specific questions that are related to "scaling
+      software", but for me most of it boils down to this:
+      <b
+        >Can a human or agent understand and change the implementation with
+        minimal context?</b
+      >
+    </p>
+
+    <p>
+      Almost always, this question cannot be answered with an objective "yes" or
+      "no". When I answer it, my reasoning is grounded in my experience and
+      taste, and it depends a lot on external context (the kind of software, its
+      history, etc.).
+    </p>
+
+    <p>
+      I found that LLMs produce the best results when working with well-designed
+      primitives. Without strict guidance, small inconsistencies compound over
+      time. One new special case here, copy one existing workaround there, and
+      quite quickly the software, not just the codebase, ends up in a state we
+      call "slop". In my opinion, quantifying and enforcing good code
+      architecture is the most crucial step toward further automating software
+      engineering.
+    </p>
+
+    <p>
+      Custom lint rules are a powerful tool to encode what good looks like to
+      you, in your specific codebase. But I think this is just scratching the
+      surface. I am thinking a lot these days about how to quantify a "good"
+      codebase, for example how to measure things like coupling or cohesion, and
+      how to turn these numbers into me trusting the quality of the code without
+      having to read it.
+    </p>
+
+    <p>
+      There is no silver bullet and no one true way to quantify everything. A
+      human will always need to be <i>somewhere</i> in the loop. The trick is to
+      know when. I started to define a list of criteria for when I want to be
+      involved. A code review agent can use these to classify every PR, and if
+      I'm not needed, the PR can be auto-merged once CI turns green.
+    </p>
+
+    <h2>Conclusion</h2>
+
+    <p>
+      You might have noticed that I haven't provided any definitive solutions to
+      the two main questions. I don't have them (yet).
+    </p>
+
+    <p>
+      I'm still iterating on my workflows every week. And even if I were to find
+      the <i>perfect</i> solution for myself, I'm pretty sure it won't be as
+      perfect for you. No two codebases are the same, so no one workflow or tool
+      will ever be ideal for all.
+    </p>
+
+    <p>
+      I want you to walk away with some long-term perspective. Think about how
+      you can evolve your and your team's workflows so that you start removing
+      the biggest bottleneck. For me, right now, it's reading code. This does
+      not mean we'll all stop reading code overnight, but I want to be ready and
+      ahead of the curve for the world where we don't anymore.
+    </p>
+
+    <p>Do you still read your code?</p>
+
+    <footer>
+      <p>
+        <a
+          href="https://www.linkedin.com/sharing/share-offsite/?text=Stop%20reading%20the%20code%0A%0Ahttps%3A%2F%2Fthomasheyenbrock.com%2Fblog%2Fstop-reading-the-code"
+        >
+          Share on LinkedIn
+        </a>
+      </p>
+
+      <p>
+        <a
+          href="https://x.com/intent/post?text=Stop%20reading%20the%20code%0A%0Ahttps%3A%2F%2Fthomasheyenbrock.com%2Fblog%2Fstop-reading-the-code"
+        >
+          Share on X
+        </a>
+      </p>
+
+      <p>
+        <a
+          href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fthomasheyenbrock.com%2Fblog%2Fstop-reading-the-code&t=Stop%20reading%20the%20code"
+        >
+          Share on HackerNews
+        </a>
+      </p>
+    </footer>
+  </body>
+</html>
